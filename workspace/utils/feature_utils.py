@@ -40,7 +40,7 @@ def sort_cols(cols):
 
 
 
-# Target
+####### Target ######
 def target_rv(time_idx, level1_data, horizons):
     """Compute future realized volatility targets"""
     df = pd.DataFrame(index=time_idx)
@@ -58,6 +58,18 @@ def target_rv(time_idx, level1_data, horizons):
                     .pow(0.5)
         )
     return df
+
+###### Features #######
+def build_features(time_idx, level1_data, book_data, trade_data, taus):
+    df_level1 = feature_level1(time_idx, level1_data, taus)
+    df_book = feature_book(time_idx, book_data)
+    df_trade = feature_trade(time_idx, trade_data, taus)
+    df_others = feature_others(time_idx)
+
+    df_features = pd.concat([df_level1, df_book, df_trade, df_others], axis=1)
+
+    return df_features
+
 
 ### Level1 Features ###
 def feature_level1(time_idx, level1_data, taus):

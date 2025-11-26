@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-def plot_corr_heatmap(df, figsize=(10, 8), title="Correlation Heatmap"):
+def plot_corr_heatmap(df, method="spearman", figsize=(10, 8), title="Correlation Heatmap"):
     """Plots a correlation heatmap for a given DataFrame"""
-    corr = df.corr()
+    corr = df.corr(method=method)
 
     plt.figure(figsize=figsize)
     sns.heatmap(
