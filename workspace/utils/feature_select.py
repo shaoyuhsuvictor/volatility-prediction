@@ -32,13 +32,28 @@ def select_ic(df, target, thresh=0.10):
     keep = ic[ic.abs() > thresh].index.tolist()
     return keep, ic
 
-def prune_corr(df, feats, thresh=0.70):
-    """Prune features by Pearson collinearity."""
+def prune_corr(df, feats, ic_series, thresh=0.70):
+    """
+    Prune features by Pearson collinearity using sequential IC-ranked selection.
+    Keeps the highest-IC feature in each correlated cluster.
+    """
+    # Compute correlation matrix (abs)
     corr = df[feats].corr(method="pearson").abs()
-    upper = corr.where(np.triu(np.ones(corr.shape), 1).astype(bool))
-    drop = [c for c in upper.columns if any(upper[c] > thresh)]
-    final = [f for f in feats if f not in drop]
-    return final, corr, drop
+
+    # Sort features by absolute IC (descending)
+    ranked = sorted(feats, key=lambda f: abs(ic_series[f]), reverse=True)
+
+    selected = []
+    dropped = []
+
+    for f in ranked:
+        # Check correlation with already-selected features
+        if all(corr.loc[f, s] < thresh for s in selected):
+            selected.append(f)
+        else:
+            dropped.append(f)
+
+    return selected, corr, dropped
 
 def plot_ic(df, feats, target):
     """Plot Spearman IC heatmap."""
