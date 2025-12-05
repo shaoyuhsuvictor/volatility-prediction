@@ -41,9 +41,9 @@ def sort_cols(cols):
 
 
 ####### Target ######
-def target_rv(time_idx, level1_data, horizons):
+def target_rv(level1_data, horizons):
     """Compute future realized volatility targets"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=level1_data.index)
 
     close_mid = level1_data["close_mid"]
     log_ret_1m = np.log(close_mid / close_mid.shift(1))
@@ -60,11 +60,11 @@ def target_rv(time_idx, level1_data, horizons):
     return df
 
 ###### Features #######
-def build_features(time_idx, level1_data, book_data, trade_data, taus):
-    df_level1 = feature_level1(time_idx, level1_data, taus)
-    df_book = feature_book(time_idx, book_data)
-    df_trade = feature_trade(time_idx, trade_data, taus)
-    df_others = feature_others(time_idx)
+def build_features(level1_data, book_data, trade_data, taus):
+    df_level1 = feature_level1(level1_data, taus)
+    df_book = feature_book(book_data)
+    df_trade = feature_trade(trade_data, taus)
+    df_others = feature_others(level1_data.index)
 
     df_features = pd.concat([df_level1, df_book, df_trade, df_others], axis=1)
 
@@ -72,14 +72,14 @@ def build_features(time_idx, level1_data, book_data, trade_data, taus):
 
 
 ### Level1 Features ###
-def feature_level1(time_idx, level1_data, taus):
+def feature_level1(level1_data, taus):
     """"""
-    df_ret = feature_return(time_idx, level1_data, taus)
-    df_rv = feature_rv(time_idx, level1_data, taus)
-    df_shape = feature_shape(time_idx, level1_data, taus)
-    df_tick_vol = feature_tick_vol(time_idx, level1_data, taus)
-    df_price_range = feature_price_range(time_idx, level1_data, taus)
-    df_spread = feature_spread(time_idx, level1_data)
+    df_ret = feature_return(level1_data, taus)
+    df_rv = feature_rv(level1_data, taus)
+    df_shape = feature_shape(level1_data, taus)
+    df_tick_vol = feature_tick_vol(level1_data, taus)
+    df_price_range = feature_price_range(level1_data, taus)
+    df_spread = feature_spread(level1_data)
 
     df_level1 = pd.concat([df_ret, df_rv, df_shape, df_tick_vol, df_price_range, df_spread], axis=1)
     df_level1 = df_level1[sort_cols(df_level1.columns)]
@@ -87,9 +87,9 @@ def feature_level1(time_idx, level1_data, taus):
     return df_level1
 
 # Return-based features
-def feature_return(time_idx, level1_data, taus):
+def feature_return(level1_data, taus):
     """Compute return-based features"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=level1_data.index)
 
     close_mid = level1_data["close_mid"]
     for tau in taus:
@@ -107,9 +107,9 @@ def feature_return(time_idx, level1_data, taus):
     return df
 
 # Realized volatility features
-def feature_rv(time_idx, level1_data, taus):
+def feature_rv(level1_data, taus):
     """Compute historical realized volatility features"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=level1_data.index)
 
     log_return = level1_data["log_return"]
     for tau in taus:
@@ -123,9 +123,9 @@ def feature_rv(time_idx, level1_data, taus):
 
 
 # Distribution shape features
-def feature_shape(time_idx, level1_data, taus):
+def feature_shape(level1_data, taus):
     """Compute distribution shape features"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=level1_data.index)
 
     log_return = level1_data["log_return"]
     for tau in taus:
@@ -140,9 +140,9 @@ def feature_shape(time_idx, level1_data, taus):
     return df
 
 # Tick volatility features
-def feature_tick_vol(time_idx, level1_data, taus):
+def feature_tick_vol(level1_data, taus):
     """ Compute tick volatility features"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=level1_data.index)
 
     tick_volatility = level1_data["tick_volatility"]
     df["tick_vol"] = tick_volatility
@@ -153,9 +153,9 @@ def feature_tick_vol(time_idx, level1_data, taus):
     return df
 
 # Price range features
-def feature_price_range(time_idx, level1_data, taus):
+def feature_price_range(level1_data, taus):
     """Compute price range features"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=level1_data.index)
 
     max_mid = level1_data["max_mid"]
     min_mid = level1_data["min_mid"]
@@ -177,9 +177,9 @@ def feature_price_range(time_idx, level1_data, taus):
 
     return df
 # Spread features
-def feature_spread(time_idx, level1_data):
+def feature_spread(level1_data):
     """Compute spread features"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=level1_data.index)
 
     close_mid = level1_data["close_mid"]
 
@@ -199,10 +199,10 @@ def feature_spread(time_idx, level1_data):
     return df
 
 ### Book Features ###
-def feature_book(time_idx, book_data):
+def feature_book(book_data):
     """"""
-    df_obi = feature_obi(time_idx, book_data)
-    df_ofi = feature_ofi(time_idx, book_data)
+    df_obi = feature_obi(book_data)
+    df_ofi = feature_ofi(book_data)
 
     df_book = pd.concat([df_obi, df_ofi], axis=1)
     df_book = df_book[sort_cols(df_book.columns)]
@@ -210,9 +210,9 @@ def feature_book(time_idx, book_data):
     return df_book
 
 # Order-book imbalance features
-def feature_obi(time_idx, book_data):
+def feature_obi(book_data):
     """Compute order-book imbalance features within bps from mid"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=book_data.index)
 
     df["obi"] = (
         (book_data["bid_size"] - book_data["ask_size"]) /
@@ -234,9 +234,9 @@ def feature_obi(time_idx, book_data):
     return df
 
 # Order-flow imbalance features
-def feature_ofi(time_idx, book_data):
+def feature_ofi(book_data):
     """Compute order-flow imbalance features within bps from mid"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=book_data.index)
 
     bid_diff = book_data["bid_size"].diff()
     ask_diff = book_data["ask_size"].diff()
@@ -258,9 +258,9 @@ def feature_ofi(time_idx, book_data):
     return df
 
 ### Trade Features ###
-def feature_trade(time_idx, trade_data, taus):
+def feature_trade(trade_data, taus):
     """"""
-    df_trade_vol = feature_trade_vol(time_idx, trade_data, taus)
+    df_trade_vol = feature_trade_vol(trade_data, taus)
     df_trade_count = feature_trade_count(trade_data, taus)
     df_volumes = feature_volume(trade_data, taus)
 
@@ -270,9 +270,9 @@ def feature_trade(time_idx, trade_data, taus):
     return df_trade
 
 # Trade volatility features
-def feature_trade_vol(time_idx, trade_data, taus):
+def feature_trade_vol(trade_data, taus):
     """Compute trade volatility features"""
-    df = pd.DataFrame(index=time_idx)
+    df = pd.DataFrame(index=trade_data.index)
 
     trade_volatility = trade_data["trade_volatility"]
     df["trade_vol"] = trade_volatility
@@ -331,9 +331,9 @@ def feature_others(time_idx):
     """"""
     df_seas = feature_seasonality(time_idx)
 
-    df_book = pd.concat([df_seas], axis=1)
+    df_others = pd.concat([df_seas], axis=1)
 
-    return df_book
+    return df_others
 
 # Seasonality features
 def feature_seasonality(time_idx):
