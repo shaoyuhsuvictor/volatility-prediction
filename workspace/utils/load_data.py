@@ -6,8 +6,8 @@ import pandas as pd
 HOME_PATH = os.environ['HOME']
 
 # put your data in this folder or change forder name accordingly.
-# DATA_PATH = os.path.join(HOME_PATH, 'data', 'fordham')
-DATA_PATH = "/home/data/data/time_series/market_data/"
+DATA_PATH = os.path.join(HOME_PATH, 'data', 'fordham')
+# DATA_PATH = "/home/data/data/time_series/market_data/"
 
 # this is where your output get written
 # OUTPUT_PATH = os.path.join(HOME_PATH, 'research', 'fordham')
