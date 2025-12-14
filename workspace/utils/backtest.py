@@ -39,16 +39,16 @@ def vol_managed_backtest(returns, pred_vol,
     vol_base  = base_ret.std()  * np.sqrt(ann_factor)
 
     metrics = {
-        "PnL (Vol-Managed)": strat_ret.cumsum().dropna().iloc[-1],
-        "PnL (Buy & Hold)": base_ret.cumsum().dropna().iloc[-1],
-        "Sharpe (Vol-Managed)": sharpe_strat,
-        "Sharpe (Buy & Hold)"        : sharpe_base,
-        "Sortino (Vol-Managed)": sortino_strat,
-        "Sortino (Buy & Hold)"        : sortino_base,
+        "Cumulative Return (Vol-Managed)": strat_ret.cumsum().dropna().iloc[-1],
+        "Cumulative Return (Buy & Hold)": base_ret.cumsum().dropna().iloc[-1],
+        "Annualized Sharpe (Vol-Managed)": sharpe_strat,
+        "Annualized Sharpe (Buy & Hold)"        : sharpe_base,
+        "Annualized Sortino (Vol-Managed)": sortino_strat,
+        "Annualized Sortino (Buy & Hold)"        : sortino_base,
         "Max DD (Vol-Managed)": dd_strat,
         "Max DD (Buy & Hold)"        : dd_base,
-        "Volatility (Vol-Managed)"    : vol_strat,
-        "Volatility (Buy & Hold)"    : vol_base
+        "Annualized Volatility (Vol-Managed)"    : vol_strat,
+        "Annualized Volatility (Buy & Hold)"    : vol_base
     }
 
     return strat_ret, base_ret, metrics, w
@@ -69,8 +69,8 @@ def plot_backtest(strat_ret, base_ret, weights=None, title="Volatility-Managed v
     
     # Panel 2: Weights
     if weights is not None:
-        weights.plot(label="Position Size", color="green", linewidth=0.7, alpha=0.8, ax=axes[1])
-        axes[1].set_ylabel("Weight")
+        weights.plot(label="Volatility Scaling Weight", color="green", linewidth=0.7, alpha=0.8, ax=axes[1])
+        axes[1].set_ylabel("Position Weight")
         axes[1].set_xlabel("Time")
         axes[1].legend()
         axes[1].grid(True, alpha=0.3)
