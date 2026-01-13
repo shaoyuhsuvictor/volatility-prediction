@@ -5,3 +5,4 @@ milestone1/
 workspace/
 __pycache__/
 *.ipynb_checkpoints
+paper/
